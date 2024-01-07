@@ -1,3 +1,11 @@
+//
+//  ExtSwiftSyntaxTests.swift
+//  ExtSwiftSyntax
+//
+//  Created by Míng on 2024-01-07.
+//  Copyright (c) 2024 Míng <minglq.9@gmail.com>. Released under the MIT license.
+//
+
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
@@ -5,10 +13,6 @@ import XCTest
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
 #if canImport(ExtSwiftSyntaxMacros)
 import ExtSwiftSyntaxMacros
-
-let testMacros: [String: Macro.Type] = [
-    "stringify": StringifyMacro.self,
-]
 #endif
 
 final class ExtSwiftSyntaxTests: XCTestCase {
@@ -16,12 +20,17 @@ final class ExtSwiftSyntaxTests: XCTestCase {
         #if canImport(ExtSwiftSyntaxMacros)
         assertMacroExpansion(
             """
-            #stringify(a + b)
+            #unwrap(expr, message)
             """,
             expandedSource: """
-            (a + b, "a + b")
+            { [wrappValue = expr] in
+                guard let wrappValue else {
+                    preconditionFailure(message)
+                }
+                return wrappValue
+            }()
             """,
-            macros: testMacros
+            macros: [ "unwrap": UnwrapMacro.self ]
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -32,12 +41,17 @@ final class ExtSwiftSyntaxTests: XCTestCase {
         #if canImport(ExtSwiftSyntaxMacros)
         assertMacroExpansion(
             #"""
-            #stringify("Hello, \(name)")
+            #unwrap(expr, "message")
             """#,
             expandedSource: #"""
-            ("Hello, \(name)", #""Hello, \(name)""#)
+            { [wrappValue = expr] in
+                guard let wrappValue else {
+                    preconditionFailure("message")
+                }
+                return wrappValue
+            }()
             """#,
-            macros: testMacros
+            macros: [ "unwrap": UnwrapMacro.self ]
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
