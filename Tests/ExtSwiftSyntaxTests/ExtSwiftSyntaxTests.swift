@@ -16,8 +16,9 @@ import ExtSwiftSyntaxMacros
 #endif
 
 final class ExtSwiftSyntaxTests: XCTestCase {
-    func testMacro() throws {
+    func testUnwrapMacro() throws {
         #if canImport(ExtSwiftSyntaxMacros)
+        let testMacros = [ "unwrap": UnwrapMacro.self ]
         assertMacroExpansion(
             """
             #unwrap(expr, message)
@@ -30,15 +31,8 @@ final class ExtSwiftSyntaxTests: XCTestCase {
                 return wrappValue
             }()
             """,
-            macros: [ "unwrap": UnwrapMacro.self ]
+            macros: testMacros
         )
-        #else
-        throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
-    }
-
-    func testMacroWithStringLiteral() throws {
-        #if canImport(ExtSwiftSyntaxMacros)
         assertMacroExpansion(
             #"""
             #unwrap(expr, "message")
@@ -51,10 +45,62 @@ final class ExtSwiftSyntaxTests: XCTestCase {
                 return wrappValue
             }()
             """#,
-            macros: [ "unwrap": UnwrapMacro.self ]
+            macros: testMacros
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
         #endif
+    }
+    
+    func testIsMacro() throws {
+        #if canImport(ExtSwiftSyntaxMacros)
+        let testMacros = [ "is": IsMacro.self ]
+        assertMacroExpansion(
+            """
+            #is(expr, type)
+            """,
+            expandedSource: """
+            (expr is type)
+            """,
+            macros: testMacros
+        )
+        assertMacroExpansion(
+            #"""
+            #is(expr, NSString)
+            """#,
+            expandedSource: #"""
+            (expr is NSString)
+            """#,
+            macros: testMacros
+        )
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testIsNotMacro() throws {
+#if canImport(ExtSwiftSyntaxMacros)
+        let testMacros = [ "is": IsNotMacro.self ] // !!!: "is", instead of "not"
+        assertMacroExpansion(
+            """
+            #is(expr, not: type)
+            """,
+            expandedSource: """
+            !(expr is type)
+            """,
+            macros: testMacros
+        )
+        assertMacroExpansion(
+            #"""
+            #is(expr, not: NSString)
+            """#,
+            expandedSource: #"""
+            !(expr is NSString)
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
     }
 }

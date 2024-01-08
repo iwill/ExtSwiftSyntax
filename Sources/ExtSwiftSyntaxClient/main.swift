@@ -8,10 +8,16 @@
 
 import ExtSwiftSyntax
 
-let none: String? = nil
-let some: String? = "some"
+import Foundation
 
-let null = #unwrap(none, message: "it's null")
-let string = #unwrap(some, message: "it's string")
+let none: String? = nil,
+    some: String? = "some"
+let null = #unwrap(none, message: "it's null"),
+    string = #unwrap(some, message: "it's string")
+print("The value \(string) was produced by the code of macro `#unwrap`")
 
-print("The value \(string) was produced by the code of macro `unwrap`")
+let obj: NSObject = "str" as NSString
+let boolIs = #is(obj, NSString)
+let boolNot = #is(obj, not: NSString)
+print("The value \(boolIs) was produced by the code of macro `#is`")
+print("The value \(boolIs) was produced by the code of macro `#is(not:)`")

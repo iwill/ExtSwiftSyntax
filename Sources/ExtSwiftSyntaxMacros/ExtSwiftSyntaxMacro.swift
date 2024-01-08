@@ -15,6 +15,8 @@ import SwiftSyntaxMacros
 @main
 struct ExtSwiftSyntaxPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
-        UnwrapMacro.self
+        UnwrapMacro.self,
+        IsMacro.self,
+        IsNotMacro.self
     ]
 }
